@@ -1,0 +1,27 @@
+server:
+  port: ${PORT:8082}
+
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    url: "jdbc:h2:mem:pedidos360catalog;MODE=Oracle;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=10000"
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 1
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+
+catalog:
+  sample-data:
+    enabled: ${LOCAL_SAMPLE_DATA:true}
+  security:
+    jwt:
+      issuer: ${LOCAL_JWT_ISSUER:https://login.microsoftonline.com/pedidos360-local/v2.0}
+      audience: ${LOCAL_JWT_AUDIENCE:api://150f51db-4084-4979-b1a1-e6a6e7893a01}
+      hmac-secret: ${LOCAL_JWT_HMAC_SECRET:pedidos360-local-secret-change-me-32-bytes-minimum}

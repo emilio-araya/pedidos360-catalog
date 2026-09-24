@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!-- Los beans Spring almacenan collaborators private final por diseño. -->
+    <Match>
+        <Class name="com.pedidos360.catalog.config.SecurityProblemSupport"/>
+        <Or>
+            <Bug pattern="EI_EXPOSE_REP2"/>
+        </Or>
+    </Match>
+    <Match>
+        <Class name="com.pedidos360.catalog.web.ProductController"/>
+        <Or>
+            <Bug pattern="EI_EXPOSE_REP2"/>
+        </Or>
+    </Match>
+
+    <!-- Las entidades no declaran finalizers; la advertencia de constructor no aplica. -->
+    <Match>
+        <Or>
+            <Class name="com.pedidos360.catalog.domain.Product"/>
+            <Class name="com.pedidos360.catalog.domain.StockReservationItem"/>
+        </Or>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+    </Match>
+</FindBugsFilter>

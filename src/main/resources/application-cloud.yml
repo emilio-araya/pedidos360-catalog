@@ -1,0 +1,23 @@
+spring:
+  config:
+    activate:
+      on-profile: cloud
+  datasource:
+    url: ${ORACLE_URL}
+    driver-class-name: oracle.jdbc.OracleDriver
+    username: ${ORACLE_USERNAME}
+    password: ${ORACLE_PASSWORD}
+    hikari:
+      maximum-pool-size: ${ORACLE_POOL_MAX_SIZE:20}
+      minimum-idle: ${ORACLE_POOL_MIN_IDLE:2}
+      connection-timeout: 30000
+  jpa:
+    database-platform: org.hibernate.dialect.OracleDialect
+    hibernate:
+      ddl-auto: update
+
+catalog:
+  security:
+    jwt:
+      issuer: ${ENTRA_ISSUER}
+      audience: ${ENTRA_API_AUDIENCE}
