@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -36,6 +37,7 @@ class LocalJwtDecoderIntegrationTest {
     private static final String AUDIENCE = "pedidos360-api-test";
 
     @Autowired
+    @Qualifier("entraJwtDecoder")
     private JwtDecoder decoder;
 
     @Test

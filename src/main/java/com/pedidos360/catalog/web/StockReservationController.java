@@ -16,7 +16,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/internal/catalog/stock/reservations")
+@RequestMapping({
+        "/api/internal/catalog/stock/reservations",
+        "/aws/api/internal/catalog/stock/reservations",
+        "/internal/catalog/stock/reservations"
+})
 public class StockReservationController {
 
     private final StockReservationService reservationService;
