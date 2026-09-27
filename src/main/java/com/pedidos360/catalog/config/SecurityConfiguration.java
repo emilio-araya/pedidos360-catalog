@@ -68,6 +68,11 @@ public class SecurityConfiguration {
                 .securityMatcher(matchers)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // La lectura tambien exige un rol conocido, no solo estar
+                        // autenticado. El caso define tres roles y un token de
+                        // Cognito sin grupo debe recibir 403 en lugar de poder
+                        // leer el catalogo. Con .authenticated() un usuario sin
+                        // grupoReconocido tendria acceso de lectura.
                         .requestMatchers(HttpMethod.GET, publicReadPaths())
                         .hasAnyRole("Admin", "Operador", "Cliente")
                         .requestMatchers(mutationPaths())
