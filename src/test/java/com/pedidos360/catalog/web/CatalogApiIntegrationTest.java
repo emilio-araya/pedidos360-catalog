@@ -110,6 +110,22 @@ class CatalogApiIntegrationTest {
     }
 
     @Test
+    void cognitoNamespaceUsesTheSameRoleContract() throws Exception {
+        mockMvc.perform(get("/aws/api/catalog/products")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_Cliente"))))
+                .andExpect(status().isOk());
+
+        ProductRequest request = new ProductRequest(
+                "aws-001", "Producto AWS", "Descripción", new BigDecimal("15.00"), 3, true);
+        mockMvc.perform(post("/aws/api/catalog/products")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_Operador")))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(request)))
+                .andExpect(status().isCreated())
+                .andExpect(header().string("Location", org.hamcrest.Matchers.startsWith("/aws/api/catalog/products/")));
+    }
+
+    @Test
     void rejectsInvalidPayloadWithProblemDetails() throws Exception {
         mockMvc.perform(post("/api/catalog/products")
                         .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_Admin")))

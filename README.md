@@ -7,7 +7,8 @@ Microservicio Spring Boot 3.5 / Java 17 para catálogo, stock y reservas idempot
 - CRUD de productos y actualización absoluta de stock.
 - Reservas de stock por `orderId`, con respuesta y liberación idempotentes.
 - Serialización de operaciones de stock mediante bloqueos pesimistas de JPA.
-- Seguridad OAuth2 Resource Server, validación JWT y errores RFC 9457 `ProblemDetail`.
+- Seguridad OAuth2 Resource Server con dos cadenas: Entra para `/api/**` y Cognito para `/aws/api/**`.
+- Validación JWT, `token_use=access` para Cognito, `cognito:groups` y errores RFC 9457 `ProblemDetail`.
 - Perfil `local` con H2 en memoria, datos de ejemplo y JWT HMAC.
 - Perfil `cloud` con Oracle y descubrimiento de llaves de Microsoft Entra ID.
 
@@ -15,7 +16,7 @@ Microservicio Spring Boot 3.5 / Java 17 para catálogo, stock y reservas idempot
 
 | Método | Ruta | Acceso |
 |---|---|---|
-| `GET` | `/api/catalog/products` | cualquier autenticado |
+| `GET` | `/api/catalog/products` o `/aws/api/catalog/products` | cualquier autenticado |
 | `GET` | `/api/catalog/products/{id}` | cualquier autenticado |
 | `POST` | `/api/catalog/products` | `Admin`, `Operador` |
 | `PUT` | `/api/catalog/products/{id}` | `Admin`, `Operador` |
@@ -24,6 +25,8 @@ Microservicio Spring Boot 3.5 / Java 17 para catálogo, stock y reservas idempot
 | `POST` | `/internal/catalog/stock/reservations` | `Admin`, `Operador` |
 | `DELETE` | `/internal/catalog/stock/reservations/{orderId}` | `Admin`, `Operador` |
 | `GET` | `/actuator/health` | público |
+
+Cada ruta de producto tiene un equivalente bajo `/aws/api/**`; el decoder y el claim de roles se seleccionan por prefijo. Las reservas internas de Entra conservan `/internal/**` por compatibilidad y las de Cognito usan `/aws/api/internal/**`; ninguna se publica en API Gateway.
 
 `PATCH .../stock` recibe el valor absoluto de stock:
 
@@ -87,6 +90,9 @@ export ORACLE_USERNAME='catalog_user'
 export ORACLE_PASSWORD='...'
 export ENTRA_ISSUER='https://login.microsoftonline.com/<tenant-id>/v2.0'
 export ENTRA_API_AUDIENCE='150f51db-4084-4979-b1a1-e6a6e7893a01'
+export COGNITO_ISSUER='https://cognito-idp.us-east-1.amazonaws.com/us-east-1_UmEhPRYdI'
+export COGNITO_API_AUDIENCE='59be26pgg5ginu2sutr8eetgjg'
+export COGNITO_JWK_SET_URI='https://cognito-idp.us-east-1.amazonaws.com/us-east-1_UmEhPRYdI/.well-known/jwks.json'
 java -jar target/ms-pedidos360-catalog-1.0.0.jar
 ```
 
@@ -96,7 +102,8 @@ Variables opcionales: `ORACLE_POOL_MAX_SIZE` (20), `ORACLE_POOL_MIN_IDLE` (2) y 
 
 - En `cloud`, el Resource Server obtiene las llaves del issuer configurado y valida firma, `iss`, `aud`, `exp` y `nbf` cuando está presente.
 - El decoder HMAC está limitado por `@Profile("local")` y exige secreto de al menos 32 caracteres.
-- El claim `roles` de Entra se convierte a autoridades `ROLE_Admin`, `ROLE_Operador` o `ROLE_Cliente`; la comparación distingue mayúsculas y minúsculas.
+- El claim `roles` de Entra y `cognito:groups` de Cognito se convierten a autoridades `ROLE_Admin`, `ROLE_Operador` o `ROLE_Cliente`; la comparación distingue mayúsculas y minúsculas.
+- El decoder de Cognito exige `token_use=access`; el ID token no puede acceder a la API.
 - No se exponen ni se registran tokens ni credenciales.
 
 ## Pruebas

@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/catalog/products")
+@RequestMapping({"/api/catalog/products", "/aws/api/catalog/products"})
 public class ProductController {
 
     private final ProductService productService;
@@ -40,9 +41,14 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<ProductResponse> create(@Valid @RequestBody ProductRequest request) {
+    public ResponseEntity<ProductResponse> create(
+            @Valid @RequestBody ProductRequest request,
+            HttpServletRequest httpRequest
+    ) {
         ProductResponse created = productService.create(request);
-        return ResponseEntity.created(URI.create("/api/catalog/products/" + created.id())).body(created);
+        return ResponseEntity.created(
+                URI.create(httpRequest.getRequestURI() + "/" + created.id())
+        ).body(created);
     }
 
     @PutMapping("/{id}")
