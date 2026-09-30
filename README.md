@@ -1,5 +1,10 @@
 # ms-pedidos360-catalog
 
+[![CI](https://github.com/emilio-araya/pedidos360-catalog/actions/workflows/ci.yml/badge.svg)](https://github.com/emilio-araya/pedidos360-catalog/actions/workflows/ci.yml)
+[![Java](https://img.shields.io/badge/Java-17-ED8B00?logo=openjdk&logoColor=white)](https://openjdk.org)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5.7-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Oracle](https://img.shields.io/badge/Oracle-F80000?logo=oracle&logoColor=white)](https://www.oracle.com/database/)
+
 Microservicio Spring Boot 3.5 / Java 17 para catálogo, stock y reservas idempotas de Pedidos360.
 
 ## Funcionalidad
@@ -89,10 +94,10 @@ export ORACLE_URL='jdbc:oracle:thin:@//oracle-host:1521/SERVICE_NAME'
 export ORACLE_USERNAME='catalog_user'
 export ORACLE_PASSWORD='...'
 export ENTRA_ISSUER='https://login.microsoftonline.com/<tenant-id>/v2.0'
-export ENTRA_API_AUDIENCE='150f51db-4084-4979-b1a1-e6a6e7893a01'
-export COGNITO_ISSUER='https://cognito-idp.us-east-1.amazonaws.com/us-east-1_UmEhPRYdI'
-export COGNITO_API_AUDIENCE='59be26pgg5ginu2sutr8eetgjg'
-export COGNITO_JWK_SET_URI='https://cognito-idp.us-east-1.amazonaws.com/us-east-1_UmEhPRYdI/.well-known/jwks.json'
+export ENTRA_API_AUDIENCE='<entra-api-client-id>'
+export COGNITO_ISSUER='https://cognito-idp.us-east-1.amazonaws.com/us-east-1_example'
+export COGNITO_API_AUDIENCE='<cognito-app-client-id>'
+export COGNITO_JWK_SET_URI='https://cognito-idp.us-east-1.amazonaws.com/us-east-1_example/.well-known/jwks.json'
 java -jar target/ms-pedidos360-catalog-1.0.0.jar
 ```
 
