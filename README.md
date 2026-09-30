@@ -114,10 +114,18 @@ Variables opcionales: `ORACLE_POOL_MAX_SIZE` (20), `ORACLE_POOL_MIN_IDLE` (2) y 
 ## Pruebas
 
 ```bash
-mvn test
+mvn verify
 ```
 
 Las pruebas cubren reglas de stock, servicio de reservas, CRUD y seguridad por MockMvc, repositorios JPA/H2 e idempotencia integral, además de firma/issuer/audience/expiración/`nbf` del JWT local.
+
+| Métrica | Valor |
+|---|---|
+| Pruebas | 24 |
+| Cobertura de líneas | 83.5% |
+| Cobertura de instrucciones | 80.5% |
+
+La CI ejecuta `mvn verify` en cada push y pull request, muestra el resumen en la página del workflow y adjunta el informe HTML de JaCoCo como artefacto. La cobertura de instrucciones es un umbral, no un dato decorativo: el build falla si baja del 70%.
 
 ## Imagen Docker
 
