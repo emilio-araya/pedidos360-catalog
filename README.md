@@ -111,6 +111,14 @@ Variables opcionales: `ORACLE_POOL_MAX_SIZE` (20), `ORACLE_POOL_MIN_IDLE` (2) y 
 - El decoder de Cognito exige `token_use=access`; el ID token no puede acceder a la API.
 - No se exponen ni se registran tokens ni credenciales.
 
+## Trazabilidad
+
+Cada request lleva un identificador de correlación `X-Request-Id`. Si el cliente lo envía y cumple
+`^[A-Za-z0-9._-]{1,64}$` se respeta; si falta o no cumple (por ejemplo, contiene saltos de línea) se genera un
+UUID. El id se devuelve en la respuesta y se imprime en cada línea de log, así una request se puede seguir de
+punta a punta entre BFF, orders y catalog. Un valor con saltos de línea se descarta a propósito: permitirlo
+habilitaría inyectar entradas falsas en el log.
+
 ## Pruebas
 
 ```bash
@@ -121,9 +129,9 @@ Las pruebas cubren reglas de stock, servicio de reservas, CRUD y seguridad por M
 
 | Métrica | Valor |
 |---|---|
-| Pruebas | 24 |
-| Cobertura de líneas | 83.5% |
-| Cobertura de instrucciones | 80.5% |
+| Pruebas | 27 |
+| Cobertura de líneas | 83.8% |
+| Cobertura de instrucciones | 80.8% |
 
 La CI ejecuta `mvn verify` en cada push y pull request, muestra el resumen en la página del workflow y adjunta el informe HTML de JaCoCo como artefacto. La cobertura de instrucciones es un umbral, no un dato decorativo: el build falla si baja del 70%.
 
