@@ -21,7 +21,7 @@ Microservicio Spring Boot 3.5 / Java 17 para catálogo, stock y reservas idempot
 
 | Método | Ruta | Acceso |
 |---|---|---|
-| `GET` | `/api/catalog/products` o `/aws/api/catalog/products` | cualquier autenticado |
+| `GET` | `/api/catalog/products?page=0&size=20` o `/aws/api/catalog/products?page=0&size=20` | cualquier autenticado |
 | `GET` | `/api/catalog/products/{id}` | cualquier autenticado |
 | `POST` | `/api/catalog/products` | `Admin`, `Operador` |
 | `PUT` | `/api/catalog/products/{id}` | `Admin`, `Operador` |
@@ -30,6 +30,10 @@ Microservicio Spring Boot 3.5 / Java 17 para catálogo, stock y reservas idempot
 | `POST` | `/internal/catalog/stock/reservations` | `Admin`, `Operador` |
 | `DELETE` | `/internal/catalog/stock/reservations/{orderId}` | `Admin`, `Operador` |
 | `GET` | `/actuator/health` | público |
+
+El listado de productos es paginado: devuelve `content`, `page`, `size`, `totalElements` y `totalPages`, con
+orden estable por nombre. `page` debe ser `>= 0` y `size` debe estar entre `1` y `100`; fuera de rango responde
+`400` con código `INVALID_PAGINATION`, en lugar de recortar en silencio.
 
 Cada ruta de producto tiene un equivalente bajo `/aws/api/**`; el decoder y el claim de roles se seleccionan por prefijo. Las reservas internas de Entra conservan `/internal/**` por compatibilidad y las de Cognito usan `/aws/api/internal/**`; ninguna se publica en API Gateway.
 
@@ -129,9 +133,9 @@ Las pruebas cubren reglas de stock, servicio de reservas, CRUD y seguridad por M
 
 | Métrica | Valor |
 |---|---|
-| Pruebas | 27 |
-| Cobertura de líneas | 83.8% |
-| Cobertura de instrucciones | 80.8% |
+| Pruebas | 30 |
+| Cobertura de líneas | 84.3% |
+| Cobertura de instrucciones | 81.5% |
 
 La CI ejecuta `mvn verify` en cada push y pull request, muestra el resumen en la página del workflow y adjunta el informe HTML de JaCoCo como artefacto. La cobertura de instrucciones es un umbral, no un dato decorativo: el build falla si baja del 70%.
 

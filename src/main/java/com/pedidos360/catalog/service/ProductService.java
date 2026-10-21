@@ -1,10 +1,12 @@
 package com.pedidos360.catalog.service;
 
 import com.pedidos360.catalog.api.dto.ProductRequest;
+import com.pedidos360.catalog.api.dto.PageResponse;
 import com.pedidos360.catalog.api.dto.ProductResponse;
 import com.pedidos360.catalog.domain.Product;
 import com.pedidos360.catalog.domain.ReservationStatus;
 import com.pedidos360.catalog.exception.ConflictException;
+import com.pedidos360.catalog.exception.InvalidPageRequestException;
 import com.pedidos360.catalog.exception.ResourceNotFoundException;
 import com.pedidos360.catalog.repository.ProductRepository;
 import com.pedidos360.catalog.repository.StockReservationRepository;
@@ -12,11 +14,16 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ProductService {
+
+    static final int MAX_PAGE_SIZE = 100;
 
     private final ProductRepository productRepository;
     private final StockReservationRepository reservationRepository;
@@ -29,8 +36,23 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProductResponse> findAll() {
-        return productRepository.findAll().stream().map(this::toResponse).toList();
+    public PageResponse<ProductResponse> findAll(int page, int size) {
+        Page<Product> products = productRepository.findAll(pageRequest(page, size));
+        return PageResponse.from(products.map(this::toResponse));
+    }
+
+    private PageRequest pageRequest(int page, int size) {
+        if (page < 0) {
+            throw new InvalidPageRequestException("El número de página no puede ser negativo");
+        }
+        if (size < 1 || size > MAX_PAGE_SIZE) {
+            throw new InvalidPageRequestException(
+                    "El tamaño de página debe estar entre 1 y " + MAX_PAGE_SIZE);
+        }
+        // Orden estable: sin ORDER BY, dos páginas pueden solaparse o saltear
+        // filas, y el cliente ve un listado inconsistente.
+        Sort sort = Sort.by("name").ascending().and(Sort.by("id"));
+        return PageRequest.of(page, size, sort);
     }
 
     @Transactional(readOnly = true)
