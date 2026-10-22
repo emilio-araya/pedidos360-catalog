@@ -38,7 +38,7 @@ class StockReservationServiceTest {
         productRepository = mock(ProductRepository.class);
         service = new StockReservationService(reservationRepository, productRepository);
         product = new Product(
-                "TEST-001", "Producto", null, new BigDecimal("10.00"), 5, true);
+                "TEST-001", "Producto", null, new BigDecimal("10.00"), 5, true, null);
         ReflectionTestUtils.setField(product, "id", UUID.randomUUID());
         orderId = UUID.randomUUID();
     }

@@ -98,7 +98,7 @@ class ProductPaginationIntegrationTest {
 
     private void create(String sku, String name) throws Exception {
         ProductRequest request = new ProductRequest(
-                sku, name, "desc", new BigDecimal("1000.00"), 5, true);
+                sku, name, "desc", new BigDecimal("1000.00"), 5, true, null);
         mockMvc.perform(post("/api/catalog/products")
                         .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_Operador")))
                         .contentType(MediaType.APPLICATION_JSON)

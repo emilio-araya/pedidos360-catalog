@@ -53,7 +53,7 @@ class CatalogApiIntegrationTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
 
         ProductRequest request = new ProductRequest(
-                "int-001", "Producto integration", "Descripción", new BigDecimal("12.50"), 7, true);
+                "int-001", "Producto integration", "Descripción", new BigDecimal("12.50"), 7, true, null);
 
         mockMvc.perform(post("/api/catalog/products")
                         .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_Cliente")))
@@ -81,7 +81,7 @@ class CatalogApiIntegrationTest {
                 .andExpect(jsonPath("$.id").value(created.id().toString()));
 
         ProductRequest updatedRequest = new ProductRequest(
-                "int-001", "Producto actualizado", null, new BigDecimal("13.00"), 9, false);
+                "int-001", "Producto actualizado", null, new BigDecimal("13.00"), 9, false, null);
         mockMvc.perform(patch("/api/catalog/products/{id}/stock", created.id())
                         .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_Admin")))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -115,13 +115,35 @@ class CatalogApiIntegrationTest {
                 .andExpect(status().isOk());
 
         ProductRequest request = new ProductRequest(
-                "aws-001", "Producto AWS", "Descripción", new BigDecimal("15.00"), 3, true);
+                "aws-001", "Producto AWS", "Descripción", new BigDecimal("15.00"), 3, true, null);
         mockMvc.perform(post("/aws/api/catalog/products")
                         .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_Operador")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsBytes(request)))
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Location", org.hamcrest.Matchers.startsWith("/aws/api/catalog/products/")));
+    }
+
+    @Test
+    void storesAndReturnsTheProductImageUrl() throws Exception {
+        mockMvc.perform(post("/api/catalog/products")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_Admin")))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"sku\":\"img-001\",\"name\":\"Con imagen\",\"price\":10.00,"
+                                + "\"stock\":1,\"active\":true,\"imageUrl\":\"/img/mouse.jpg\"}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.imageUrl").value("/img/mouse.jpg"));
+    }
+
+    @Test
+    void rejectsImageUrlsThatAreNotHttpsOrRootRelative() throws Exception {
+        mockMvc.perform(post("/api/catalog/products")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_Admin")))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"sku\":\"img-002\",\"name\":\"Imagen insegura\",\"price\":10.00,"
+                                + "\"stock\":1,\"active\":true,\"imageUrl\":\"javascript:alert(1)\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
     }
 
     @Test

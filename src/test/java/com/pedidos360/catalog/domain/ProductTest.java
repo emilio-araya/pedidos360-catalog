@@ -11,7 +11,7 @@ class ProductTest {
     @Test
     void adjustsStockAndNeverMakesItNegative() {
         Product product = new Product(
-                "TEST-001", "Producto", null, new BigDecimal("10.00"), 5, true);
+                "TEST-001", "Producto", null, new BigDecimal("10.00"), 5, true, null);
 
         product.adjustStock(-2);
         assertThat(product.getStock()).isEqualTo(3);
