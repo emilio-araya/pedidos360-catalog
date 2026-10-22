@@ -42,10 +42,10 @@ class CatalogApiIntegrationTest {
     private ObjectMapper objectMapper;
 
     @Test
-    void productCrudEnforcesAuthenticationAndExactRoles() throws Exception {
+    void catalogReadsArePublicAndAdministrationKeepsExactRoles() throws Exception {
         mockMvc.perform(get("/api/catalog/products"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON));
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
 
         mockMvc.perform(get("/api/catalog/products")
                         .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_Cliente"))))
