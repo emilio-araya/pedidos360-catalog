@@ -31,21 +31,24 @@ public class SampleDataConfiguration {
                             "Mouse compacto con receptor USB",
                             new BigDecimal("19990.00"),
                             25,
-                            true),
+                            true,
+                            "/img/mouse.jpg"),
                     new Product(
                             "P-002",
                             "Teclado mecánico",
                             "Teclado mecánico en español",
                             new BigDecimal("45990.00"),
                             40,
-                            true),
+                            true,
+                            "/img/teclado.jpg"),
                     new Product(
                             "P-003",
                             "Monitor 24 pulgadas",
                             "Monitor Full HD con panel IPS",
                             new BigDecimal("129990.00"),
                             10,
-                            true)));
+                            true,
+                            "/img/monitor.jpg")));
         };
     }
 }

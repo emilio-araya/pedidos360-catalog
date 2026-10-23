@@ -58,7 +58,7 @@ class StockReservationIntegrationTest {
     @Test
     void reservationIsIdempotentAndReleaseRestoresStockOnlyOnce() throws Exception {
         ProductResponse product = productService.create(new ProductRequest(
-                "stock-001", "Producto stock", null, new BigDecimal("20.00"), 5, true));
+                "stock-001", "Producto stock", null, new BigDecimal("20.00"), 5, true, null));
         UUID orderId = UUID.randomUUID();
         ReservationCreateRequest request = new ReservationCreateRequest(
                 orderId, List.of(new ReservationItemRequest(product.id(), 2)));
@@ -112,7 +112,7 @@ class StockReservationIntegrationTest {
     @Test
     void concurrentIdenticalRequestsDeductAndRestoreStockOnlyOnce() throws Exception {
         ProductResponse product = productService.create(new ProductRequest(
-                "stock-concurrent", "Producto concurrente", null, new BigDecimal("8.00"), 5, true));
+                "stock-concurrent", "Producto concurrente", null, new BigDecimal("8.00"), 5, true, null));
         UUID orderId = UUID.randomUUID();
         ReservationCreateRequest request = new ReservationCreateRequest(
                 orderId, List.of(new ReservationItemRequest(product.id(), 2)));
@@ -136,7 +136,7 @@ class StockReservationIntegrationTest {
     @Test
     void insufficientStockDoesNotCreateReservationAndEndpointRequiresAuthentication() throws Exception {
         ProductResponse product = productService.create(new ProductRequest(
-                "stock-002", "Producto sin stock", null, new BigDecimal("5.00"), 1, true));
+                "stock-002", "Producto sin stock", null, new BigDecimal("5.00"), 1, true, null));
         ReservationCreateRequest request = new ReservationCreateRequest(
                 UUID.randomUUID(), List.of(new ReservationItemRequest(product.id(), 2)));
 
