@@ -48,7 +48,55 @@ public class SampleDataConfiguration {
                             new BigDecimal("129990.00"),
                             10,
                             true,
-                            "/img/monitor.jpg")));
+                            "/img/monitor.jpg"),
+                    new Product(
+                            "P-004",
+                            "Auriculares inalámbricos",
+                            "Auriculares circumaurales con cancelación de ruido",
+                            new BigDecimal("89990.00"),
+                            12,
+                            true,
+                            "/img/auriculares.jpg"),
+                    new Product(
+                            "P-005",
+                            "Webcam HD",
+                            "Cámara 720p con micrófono integrado",
+                            new BigDecimal("39990.00"),
+                            18,
+                            true,
+                            "/img/webcam.jpg"),
+                    new Product(
+                            "P-006",
+                            "Micrófono USB",
+                            "Micrófono condensador para streaming",
+                            new BigDecimal("129990.00"),
+                            6,
+                            true,
+                            "/img/microfono.jpg"),
+                    new Product(
+                            "P-007",
+                            "Parlante Bluetooth",
+                            "Parlante portátil resistente al agua",
+                            new BigDecimal("79990.00"),
+                            9,
+                            true,
+                            "/img/parlante.jpg"),
+                    new Product(
+                            "P-008",
+                            "Dock USB-C",
+                            "Dock con HDMI, USB 3.0 y lector de tarjetas",
+                            new BigDecimal("64990.00"),
+                            15,
+                            true,
+                            "/img/hub.jpg"),
+                    new Product(
+                            "P-009",
+                            "Memoria USB 4 GB",
+                            "Pendrive USB 2.0 con tapa deslizante",
+                            new BigDecimal("7990.00"),
+                            30,
+                            true,
+                            "/img/pendrive.jpg")));
         };
     }
 }
