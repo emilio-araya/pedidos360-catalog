@@ -62,6 +62,14 @@ La primera reserva devuelve `201 Created`; una repetición idéntica devuelve `2
 
 `DELETE` restituye el stock una sola vez; si la reserva no existe o ya fue liberada, devuelve `204 No Content`. Un producto con reserva activa no puede eliminarse.
 
+### Reservas por mensajería
+
+`orders` ya no usa los endpoints de reserva: publica `pedido.aceptado`, `pedido.cancelado` y
+`pedido.reserva-huerfana`, y el catálogo los consume desde `stock.reserve` y `stock.release` con el mismo servicio
+idempotente. Responde `stock.reservado` o, ante un rechazo de negocio (stock insuficiente, producto inexistente o
+inactivo), `stock.reserva-fallida` con el código y el motivo. Los endpoints HTTP se mantienen por compatibilidad.
+Contrato, reintentos y DLQ: `pedidos360-infra/docs/MENSAJERIA_RABBITMQ.md`.
+
 ## Ejecución local
 
 Requisitos: JDK 17, Maven 3.9+ y OpenSSL para el script opcional de token.
@@ -71,7 +79,7 @@ mvn clean test
 mvn spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
-El perfil local crea tablas H2 y carga tres productos de ejemplo. Se puede desactivar con `LOCAL_SAMPLE_DATA=false`.
+El perfil local crea tablas H2 y carga nueve productos de ejemplo. Se puede desactivar con `LOCAL_SAMPLE_DATA=false`.
 
 Generar un JWT local (`Admin`, `Operador` o `Cliente`; también se pueden separar por coma):
 
@@ -87,6 +95,9 @@ Variables locales disponibles:
 - `LOCAL_JWT_HMAC_SECRET` (mínimo 32 caracteres)
 - `LOCAL_SAMPLE_DATA`
 - `PORT`
+- `RABBITMQ_HOST`, `RABBITMQ_PORT`, `RABBITMQ_USERNAME`, `RABBITMQ_PASSWORD`, `RABBITMQ_VHOST` (por defecto
+  `localhost:5672`, `guest`, vhost `/`). Sin broker la API responde y `/actuator/health` informa `DOWN`;
+  `mvn test` no necesita broker.
 
 ## Perfil cloud / Oracle
 
