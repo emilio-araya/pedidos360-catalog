@@ -13,5 +13,6 @@ public record ProductResponse(
         int stock,
         boolean active,
         Instant createdAt,
-        Instant updatedAt) {
+        Instant updatedAt,
+        String imageUrl) {
 }

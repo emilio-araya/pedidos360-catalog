@@ -70,7 +70,8 @@ public class ProductService {
                 normalizeDescription(request.description()),
                 request.price(),
                 request.stock(),
-                request.active());
+                request.active(),
+                normalizeImageUrl(request.imageUrl()));
         try {
             return toResponse(productRepository.saveAndFlush(product));
         } catch (DataIntegrityViolationException exception) {
@@ -90,7 +91,8 @@ public class ProductService {
                 normalizeDescription(request.description()),
                 request.price(),
                 request.stock(),
-                request.active());
+                request.active(),
+                normalizeImageUrl(request.imageUrl()));
         try {
             return toResponse(productRepository.saveAndFlush(product));
         } catch (DataIntegrityViolationException exception) {
@@ -151,7 +153,12 @@ public class ProductService {
                 product.getStock(),
                 product.isActive(),
                 product.getCreatedAt(),
-                product.getUpdatedAt());
+                product.getUpdatedAt(),
+                product.getImageUrl());
+    }
+
+    private String normalizeImageUrl(String imageUrl) {
+        return imageUrl == null || imageUrl.isBlank() ? null : imageUrl.trim();
     }
 
     private String normalizeSku(String sku) {

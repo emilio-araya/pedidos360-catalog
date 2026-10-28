@@ -46,6 +46,9 @@ public class Product {
     @Column(name = "active", nullable = false)
     private boolean active;
 
+    @Column(name = "image_url", length = 512)
+    private String imageUrl;
+
     @Version
     @Column(name = "version", nullable = false)
     private long version;
@@ -59,17 +62,22 @@ public class Product {
     protected Product() {
     }
 
-    public Product(String sku, String name, String description, BigDecimal price, int stock, boolean active) {
-        update(sku, name, description, price, stock, active);
+    public Product(
+            String sku, String name, String description, BigDecimal price, int stock, boolean active,
+            String imageUrl) {
+        update(sku, name, description, price, stock, active, imageUrl);
     }
 
-    public void update(String sku, String name, String description, BigDecimal price, int stock, boolean active) {
+    public void update(
+            String sku, String name, String description, BigDecimal price, int stock, boolean active,
+            String imageUrl) {
         this.sku = sku;
         this.name = name;
         this.description = description;
         this.price = price;
         setStock(stock);
         this.active = active;
+        this.imageUrl = imageUrl;
     }
 
     public void setStock(int stock) {
@@ -121,6 +129,10 @@ public class Product {
 
     public int getStock() {
         return stock;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
     }
 
     public boolean isActive() {

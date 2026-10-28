@@ -68,13 +68,13 @@ public class SecurityConfiguration {
                 .securityMatcher(matchers)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // La lectura tambien exige un rol conocido, no solo estar
-                        // autenticado. El caso define tres roles y un token de
-                        // Cognito sin grupo debe recibir 403 en lugar de poder
-                        // leer el catalogo. Con .authenticated() un usuario sin
-                        // grupoReconocido tendria acceso de lectura.
+                        // El catalogo es la vitrina publica del marketplace: un
+                        // visitante sin token puede listar y ver productos sin
+                        // iniciar sesion. Las mutaciones y la operacion de stock
+                        // siguen exigiendo rol operativo, y crear un pedido
+                        // exige token en el BFF.
                         .requestMatchers(HttpMethod.GET, publicReadPaths())
-                        .hasAnyRole("Admin", "Operador", "Cliente")
+                        .permitAll()
                         .requestMatchers(mutationPaths())
                         .hasAnyRole("Admin", "Operador")
                         .anyRequest().hasAnyRole("Admin", "Operador", "Cliente"))

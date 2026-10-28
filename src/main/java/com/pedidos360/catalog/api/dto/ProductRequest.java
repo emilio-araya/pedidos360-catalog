@@ -18,5 +18,10 @@ public record ProductRequest(
         @Size(max = 1000) String description,
         @NotNull @DecimalMin("0.00") @Digits(integer = 17, fraction = 2) BigDecimal price,
         @NotNull @Min(0) Integer stock,
-        @NotNull Boolean active) {
+        @NotNull Boolean active,
+        // Solo https o rutas propias del sitio ("/img/..."). Bloquea esquemas
+        // como javascript: o data: y las URLs protocol-relative ("//host").
+        @Size(max = 512)
+        @Pattern(regexp = "^(https://\\S+|/[^/\\s]\\S*)$")
+        String imageUrl) {
 }
