@@ -98,6 +98,10 @@ Variables locales disponibles:
 - `RABBITMQ_HOST`, `RABBITMQ_PORT`, `RABBITMQ_USERNAME`, `RABBITMQ_PASSWORD`, `RABBITMQ_VHOST` (por defecto
   `localhost:5672`, `guest`, vhost `/`). Sin broker la API responde y `/actuator/health` informa `DOWN`;
   `mvn test` no necesita broker.
+- `SPRING_RABBITMQ_ADDRESSES` (opcional): lista de nodos, por ejemplo `rabbitmq-1:5672,rabbitmq-2:5672` en el clúster
+  de `pedidos360-infra`. Tiene prioridad sobre `RABBITMQ_HOST`/`RABBITMQ_PORT` y, si un nodo cae, la conexión se reabre
+  contra el otro. Las colas `stock.reserve` y `stock.release` son `classic`: si su nodo cae, el consumo se detiene hasta
+  que vuelve.
 
 ## Perfil cloud / Oracle
 
