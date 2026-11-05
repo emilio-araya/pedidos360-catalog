@@ -8,6 +8,13 @@
         </Or>
     </Match>
     <Match>
+        <Or>
+            <Class name="com.pedidos360.catalog.web.SalesController"/>
+            <Class name="com.pedidos360.catalog.messaging.kafka.SalesProjectionListener"/>
+        </Or>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
         <Class name="com.pedidos360.catalog.web.ProductController"/>
         <Or>
             <Bug pattern="EI_EXPOSE_REP2"/>
