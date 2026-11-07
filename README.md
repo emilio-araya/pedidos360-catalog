@@ -102,9 +102,11 @@ Authorization: Bearer <token Admin u Operador>
 { "productId": "f1e13003-0790-4407-bf60-7028b1593d8c", "unitsSold": 5, "unitsDelivered": 3, "unitsCancelled": 2, "netUnits": 3 }
 ```
 
-`netUnits = unitsSold - unitsCancelled`. `GET /api/catalog/sales` devuelve la lista de todos los productos con
-ventas, ordenada por `productId`. Un producto sin ventas registradas responde `404` con código
-`PRODUCT_SALES_NOT_FOUND`. `Cliente` recibe `403` y una request sin token `401`; ambas rutas tienen su espejo bajo
+`netUnits = unitsSold - unitsCancelled`. `GET /api/catalog/sales` devuelve el catálogo completo ordenado por
+`productId`: los productos sin ventas aparecen con todos los contadores en cero, y las estadísticas de productos que
+ya no están en el catálogo se conservan para no perder historia. `GET /api/catalog/sales/products/{id}` responde
+`404` con código `PRODUCT_SALES_NOT_FOUND` sólo cuando el producto no existe ni tiene ventas. `Cliente` recibe `403`
+y una request sin token `401`; ambas rutas tienen su espejo bajo
 `/aws/api/catalog/sales`. A diferencia de `/api/catalog/products`, las ventas no son públicas. Contrato del evento:
 `pedidos360-infra/docs/MENSAJERIA_KAFKA.md`.
 

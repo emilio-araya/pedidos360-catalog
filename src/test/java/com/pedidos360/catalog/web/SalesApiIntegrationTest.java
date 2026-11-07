@@ -9,10 +9,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pedidos360.catalog.domain.Product;
+import com.pedidos360.catalog.messaging.kafka.SalesProjectionListener;
+import com.pedidos360.catalog.repository.ProductRepository;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import com.pedidos360.catalog.messaging.kafka.SalesProjectionListener;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,6 +48,9 @@ class SalesApiIntegrationTest {
 
     @Autowired
     private SalesProjectionListener listener;
+
+    @Autowired
+    private ProductRepository productRepository;
 
     private UUID productId;
 
@@ -85,6 +91,38 @@ class SalesApiIntegrationTest {
                 "unitsDelivered", 3,
                 "unitsCancelled", 2,
                 "netUnits", 3));
+    }
+
+    @Test
+    void aProductWithoutSalesAppearsInTheListWithZeroedStats() throws Exception {
+        Product fresh = productRepository.save(new Product(
+                "SKU-NO-SALES", "Producto sin ventas", null, new BigDecimal("1000.00"), 7, true, null));
+
+        byte[] body = mockMvc.perform(get("/api/catalog/sales").with(role("Operador")))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsByteArray();
+
+        List<Map<String, Object>> stats = objectMapper.readValue(body, new TypeReference<>() { });
+        assertThat(stats).contains(Map.of(
+                "productId", fresh.getId().toString(),
+                "unitsSold", 0,
+                "unitsDelivered", 0,
+                "unitsCancelled", 0,
+                "netUnits", 0));
+    }
+
+    @Test
+    void aProductWithoutSalesReturnsZeroedStatsInsteadOfNotFound() throws Exception {
+        Product fresh = productRepository.save(new Product(
+                "SKU-NO-SALES-BY-ID", "Otro producto sin ventas", null, new BigDecimal("500.00"), 3, true, null));
+
+        mockMvc.perform(get("/api/catalog/sales/products/{productId}", fresh.getId()).with(role("Admin")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.productId").value(fresh.getId().toString()))
+                .andExpect(jsonPath("$.unitsSold").value(0))
+                .andExpect(jsonPath("$.unitsDelivered").value(0))
+                .andExpect(jsonPath("$.unitsCancelled").value(0))
+                .andExpect(jsonPath("$.netUnits").value(0));
     }
 
     @Test
