@@ -14,6 +14,7 @@ Microservicio Spring Boot 3.5 / Java 17 para catálogo, stock y reservas idempot
 - Serialización de operaciones de stock mediante bloqueos pesimistas de JPA.
 - Seguridad OAuth2 Resource Server con dos cadenas: Entra para `/api/**` y Cognito para `/aws/api/**`.
 - Validación JWT, `token_use=access` para Cognito, `cognito:groups` y errores RFC 9457 `ProblemDetail`.
+- Proyección de ventas por producto alimentada por los eventos de dominio de pedido en Kafka.
 - Perfil `local` con H2 en memoria, datos de ejemplo y JWT HMAC.
 - Perfil `cloud` con Oracle y descubrimiento de llaves de Microsoft Entra ID.
 
@@ -29,6 +30,8 @@ Microservicio Spring Boot 3.5 / Java 17 para catálogo, stock y reservas idempot
 | `PATCH` | `/api/catalog/products/{id}/stock` | `Admin`, `Operador` |
 | `POST` | `/internal/catalog/stock/reservations` | `Admin`, `Operador` |
 | `DELETE` | `/internal/catalog/stock/reservations/{orderId}` | `Admin`, `Operador` |
+| `GET` | `/api/catalog/sales` | `Admin`, `Operador` |
+| `GET` | `/api/catalog/sales/products/{productId}` | `Admin`, `Operador` |
 | `GET` | `/actuator/health` | público |
 
 El listado de productos es paginado: devuelve `content`, `page`, `size`, `totalElements` y `totalPages`, con
@@ -70,6 +73,43 @@ idempotente. Responde `stock.reservado` o, ante un rechazo de negocio (stock ins
 inactivo), `stock.reserva-fallida` con el código y el motivo. Los endpoints HTTP se mantienen por compatibilidad.
 Contrato, reintentos y DLQ: `pedidos360-infra/docs/MENSAJERIA_RABBITMQ.md`.
 
+### Ventas por producto (Kafka)
+
+Kafka convive con RabbitMQ: RabbitMQ sigue llevando los comandos de stock y Kafka los eventos de dominio de pedido.
+El catálogo consume `pedidos360.order-events` con el grupo `catalog-sales-projection` y mantiene, por producto, tres
+contadores:
+
+| Evento | Efecto |
+|---|---|
+| `ORDER_ACCEPTED` | `unitsSold += quantity` por ítem |
+| `ORDER_DELIVERED` | `unitsDelivered += quantity` por ítem |
+| `ORDER_CANCELLED` con `previousStatus` `ACEPTADO`, `EN_PREPARACION` o `DESPACHADO` | `unitsCancelled += quantity` |
+| `ORDER_CANCELLED` desde `CREADO` y cualquier otro tipo | sin cambios |
+
+- **Idempotencia:** cada `eventId` se aplica una sola vez; el registro `processed_order_events` y los contadores de
+  `product_sales` se escriben en la misma transacción, así una reentrega no cambia nada. Las tablas las crea JPA,
+  igual que el resto del esquema.
+- **Errores:** JSON ilegible, `eventType` desconocido, `schemaVersion` distinta de `1` o campos obligatorios ausentes
+  van directo a `pedidos360.order-events.DLT`, sin reintentos. Un fallo transitorio (base caída, conflicto de versión)
+  se reintenta con backoff exponencial y, agotados los reintentos, también termina en la DLT.
+
+```http
+GET /api/catalog/sales/products/f1e13003-0790-4407-bf60-7028b1593d8c
+Authorization: Bearer <token Admin u Operador>
+```
+
+```json
+{ "productId": "f1e13003-0790-4407-bf60-7028b1593d8c", "unitsSold": 5, "unitsDelivered": 3, "unitsCancelled": 2, "netUnits": 3 }
+```
+
+`netUnits = unitsSold - unitsCancelled`. `GET /api/catalog/sales` devuelve el catálogo completo ordenado por
+`productId`: los productos sin ventas aparecen con todos los contadores en cero, y las estadísticas de productos que
+ya no están en el catálogo se conservan para no perder historia. `GET /api/catalog/sales/products/{id}` responde
+`404` con código `PRODUCT_SALES_NOT_FOUND` sólo cuando el producto no existe ni tiene ventas. `Cliente` recibe `403`
+y una request sin token `401`; ambas rutas tienen su espejo bajo
+`/aws/api/catalog/sales`. A diferencia de `/api/catalog/products`, las ventas no son públicas. Contrato del evento:
+`pedidos360-infra/docs/MENSAJERIA_KAFKA.md`.
+
 ## Ejecución local
 
 Requisitos: JDK 17, Maven 3.9+ y OpenSSL para el script opcional de token.
@@ -102,6 +142,11 @@ Variables locales disponibles:
   de `pedidos360-infra`. Tiene prioridad sobre `RABBITMQ_HOST`/`RABBITMQ_PORT` y, si un nodo cae, la conexión se reabre
   contra el otro. Las colas `stock.reserve` y `stock.release` son `classic`: si su nodo cae, el consumo se detiene hasta
   que vuelve.
+- `SPRING_KAFKA_BOOTSTRAP_SERVERS` (por defecto `localhost:9092`). Sin broker la API responde y el consumidor
+  reintenta la conexión en segundo plano.
+- `KAFKA_SALES_PROJECTION_ENABLED` (por defecto `true`): propiedad `app.kafka.sales-projection.enabled`; en `false`
+  el consumidor de ventas no arranca. Los reintentos se ajustan con `app.kafka.sales-projection.retry.max-retries`
+  (4), `.initial-interval-ms` (1000) y `.max-interval-ms` (10000).
 
 ## Perfil cloud / Oracle
 
@@ -144,7 +189,9 @@ habilitaría inyectar entradas falsas en el log.
 mvn verify
 ```
 
-Las pruebas cubren reglas de stock, servicio de reservas, CRUD y seguridad por MockMvc, repositorios JPA/H2 e idempotencia integral, además de firma/issuer/audience/expiración/`nbf` del JWT local.
+Las pruebas cubren reglas de stock, servicio de reservas, CRUD y seguridad por MockMvc, repositorios JPA/H2 e idempotencia integral, además de firma/issuer/audience/expiración/`nbf` del JWT local. La proyección de ventas se prueba contra H2 y con un
+broker Kafka embebido (`spring-kafka-test`) que verifica el consumo real y la DLT; el resto de la suite arranca con
+el consumidor apagado y no necesita broker.
 
 | Métrica | Valor |
 |---|---|

@@ -77,6 +77,10 @@ public class SecurityConfiguration {
                         .permitAll()
                         .requestMatchers(mutationPaths())
                         .hasAnyRole("Admin", "Operador")
+                        // Las ventas son información de negocio, no de vitrina:
+                        // ni el visitante ni el Cliente pueden leerlas.
+                        .requestMatchers(salesReadPaths())
+                        .hasAnyRole("Admin", "Operador")
                         .anyRequest().hasAnyRole("Admin", "Operador", "Cliente"))
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .authenticationEntryPoint((request, response, exception) -> problemSupport.write(
@@ -103,6 +107,15 @@ public class SecurityConfiguration {
                 "/api/catalog/products/**",
                 "/aws/api/catalog/products",
                 "/aws/api/catalog/products/**"
+        };
+    }
+
+    private String[] salesReadPaths() {
+        return new String[]{
+                "/api/catalog/sales",
+                "/api/catalog/sales/**",
+                "/aws/api/catalog/sales",
+                "/aws/api/catalog/sales/**"
         };
     }
 

@@ -31,6 +31,26 @@ spring:
         acknowledge-mode: manual
         prefetch: 10
         default-requeue-rejected: false
+  kafka:
+    # SPRING_KAFKA_BOOTSTRAP_SERVERS lo sobreescribe (por ejemplo `kafka:9092` en infra).
+    bootstrap-servers: localhost:9092
+    consumer:
+      # El grupo real lo fija el @KafkaListener (catalog-sales-projection).
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+    producer:
+      # Sólo publica en la DLT; acks=all para no perder un evento rechazado.
+      acks: all
+
+app:
+  kafka:
+    sales-projection:
+      # Arranca el consumidor de `pedidos360.order-events`.
+      enabled: ${KAFKA_SALES_PROJECTION_ENABLED:true}
+      retry:
+        max-retries: 4
+        initial-interval-ms: 1000
+        max-interval-ms: 10000
 
 management:
   endpoints:
