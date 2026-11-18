@@ -15,8 +15,8 @@ import org.junit.jupiter.api.Test;
 class SalesProjectionListenerTest {
 
     private final SalesProjectionService salesService = mock(SalesProjectionService.class);
-    private final SalesProjectionListener listener =
-            new SalesProjectionListener(JsonMapper.builder().findAndAddModules().build(), salesService);
+    private final SalesProjectionListener listener = new SalesProjectionListener(
+            new OrderEventParser(JsonMapper.builder().findAndAddModules().build()), salesService);
 
     @Test
     void malformedJsonIsRejectedAsInvalid() {

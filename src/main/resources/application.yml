@@ -51,6 +51,9 @@ app:
         max-retries: 4
         initial-interval-ms: 1000
         max-interval-ms: 10000
+    audit-trail:
+      # Consumidor de auditoría (grupo propio `pedidos360-audit`).
+      enabled: ${KAFKA_AUDIT_TRAIL_ENABLED:true}
 
 management:
   endpoints:
