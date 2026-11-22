@@ -110,6 +110,14 @@ y una request sin token `401`; ambas rutas tienen su espejo bajo
 `/aws/api/catalog/sales`. A diferencia de `/api/catalog/products`, las ventas no son públicas. Contrato del evento:
 `pedidos360-infra/docs/MENSAJERIA_KAFKA.md`.
 
+### Auditoría de eventos (`pedidos360-audit`)
+
+El mismo tópico se consume dos veces, con grupos distintos: `catalog-sales-projection` alimenta `product_sales` y
+`pedidos360-audit` escribe `audited_order_events` con el payload original del evento. Cada grupo mantiene sus propios
+offsets, así que uno puede quedarse atrás sin frenar al otro, y ambos usan el mismo parser y la misma DLT. La
+auditoría es idempotente por `eventId`: una reentrega no agrega fila. Se apaga con
+`app.kafka.audit-trail.enabled=false`.
+
 ## Ejecución local
 
 Requisitos: JDK 17, Maven 3.9+ y OpenSSL para el script opcional de token.
@@ -195,9 +203,9 @@ el consumidor apagado y no necesita broker.
 
 | Métrica | Valor |
 |---|---|
-| Pruebas | 30 |
-| Cobertura de líneas | 84.3% |
-| Cobertura de instrucciones | 81.5% |
+| Pruebas | 92 |
+| Cobertura de líneas | 87.41% |
+| Cobertura de instrucciones | 84.41% |
 
 La CI ejecuta `mvn verify` en cada push y pull request, muestra el resumen en la página del workflow y adjunta el informe HTML de JaCoCo como artefacto. La cobertura de instrucciones es un umbral, no un dato decorativo: el build falla si baja del 70%.
 
